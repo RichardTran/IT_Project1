@@ -75,9 +75,6 @@ public class post {
 
 		String result;
 		toServer.writeBytes("post " + groupname + '\n'); // send the line to the server
-		
-
-		//line = userdata.readLine(); // read a line from the user
 
 		result = fromServer.readLine(); // read a one-line result
 		if(!result.equalsIgnoreCase("ok")){
