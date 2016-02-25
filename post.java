@@ -70,26 +70,41 @@ public class post {
 
 		DataOutputStream toServer = new DataOutputStream(sock.getOutputStream());
 		BufferedReader fromServer = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-		
-		toServer.writeBytes(groupname + '\n'); // send the line to the server
+
+		// provide the post command
+
+		String result;
+		toServer.writeBytes("post " + groupname + '\n'); // send the line to the server
 		
 
 		//line = userdata.readLine(); // read a line from the user
 
-		String result = fromServer.readLine(); // read a one-line result
-		if(!result.equals("ok")){
+		result = fromServer.readLine(); // read a one-line result
+		if(!result.equalsIgnoreCase("ok")){
 			System.err.println(result);
+			sock.close(); // and we’re done
 			System.exit(1);
 		}
-		toServer.writeBytes(System.getProperty("user.name" + '\n'));
+		String user = System.getProperty("user.name");
+		System.out.println(user);
+		toServer.writeBytes("id " + user + '\n');
+		result = null;
 		result = fromServer.readLine();
-		if(!result.equals("ok")){
+		if(!result.equalsIgnoreCase("ok")){
 			System.err.println(result);
+			sock.close(); // and we’re done
 			System.exit(1);
 		}
 
 
 		System.out.println(result); // print it
+		// Send a message
+		while((line = userdata.readLine()) != null){
+			toServer.writeBytes(line + '\n');
+			result = fromServer.readLine();
+			System.out.println(result);
+		}
+
 		sock.close(); // and we’re done
 
 	 }
