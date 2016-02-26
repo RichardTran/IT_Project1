@@ -1,6 +1,6 @@
 import java.io.*;
 import java.net.*;
-public class post {
+public class get {
 	public static void main(String args []) throws Exception {
 
 		int argc = args.length;
@@ -24,7 +24,7 @@ public class post {
 				}
 			}
 			else{
-				System.err.println("Proper cmd: post [-h hostname] [-p port] groupname. " + 
+				System.err.println("Proper cmd: get [-h hostname] [-p port] groupname. " + 
 						"In addition, groupname should have no white spaces");
 				System.exit(1);
 			}
@@ -52,13 +52,13 @@ public class post {
 					}
 				}
 				else{
-					System.err.println("Proper cmd: post [-h hostname] [-p port] groupname. " + 
+					System.err.println("Proper cmd: get [-h hostname] [-p port] groupname. " + 
 						"In addition, groupname should have no white spaces");
 					System.exit(1);
 				}
 		}
 		else{
-			System.err.println("Proper cmd: post [-h hostname] [-p port] groupname. " + 
+			System.err.println("Proper cmd: get [-h hostname] [-p port] groupname. " + 
 						"In addition, groupname should have no white spaces");
 			System.exit(1);
 		}
@@ -70,7 +70,7 @@ public class post {
 		DataOutputStream toServer = new DataOutputStream(sock.getOutputStream());
 		BufferedReader fromServer = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 
-		// provide the post command
+		// provide the get command
 
 		String result;
 		toServer.writeBytes("get " + groupname + '\n'); // send the line to the server
