@@ -2,14 +2,15 @@ import java.io.*;
 import java.net.*;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Hashtable;
 
 
-public class TCPServer {
-	public static void main(String args[]) throws Exception {
+public class TCPServer implements Runnable { 
 		Socket conn; //per-thread copy of the client socket
-		private Hashtable<String, ArrayList<String>> groupsAndMessages = new Hashtable<String, ArrayList<String>>();
+		Hashtable<String, ArrayList<Message>> groupsAndMessages = new Hashtable<String, ArrayList<Message>>();
 
 
 		TCPServer(Socket sock) {
@@ -19,7 +20,7 @@ public class TCPServer {
 		public static void main(String args[]) throws Exception {
 			String host = "localhost";
 			String groupname = null;
-			int portNum;
+			int portNum = 12345;
 
 			if (args[0].equals("server")){
 				if (args.length == 1){
@@ -52,32 +53,47 @@ public class TCPServer {
 			try {
 				BufferedReader fromClient = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 				DataOutputStream toClient = new DataOutputStream(conn.getOutputStream());
+				String line;
+				CharsetEncoder asciiEncoder = Charset.forName("US-ASCII").newEncoder(); //To check if string is all ASCII
+
 				
-				while ((line = fromClient.readLine()) != null) { // while there's data from the client
+				line = fromClient.readLine();
+				while (line!= null) { // while there's data from the client
 					System.out.println("got line \"" + line + "\""); // show what we got
 					String result = line;
-
+					
 					String[] request = line.split("\\s+");
 					String groupName = request[1];
+					String requestType = request[0];
+					System.out.println("server reading groupname as "+groupName);
+					System.out.println("server reading request type as "+requestType);
 
-					if (request[0].equals("post")){
+					if (requestType.equals("post")){
 						if (asciiEncoder.canEncode(groupName) && !(groupName.matches(".*\\s+.*"))){
 							if (!groupsAndMessages.containsKey(groupName)){
-								ArrayList<String> messages = new ArrayList<String>();
+								ArrayList<Message> messages = new ArrayList<Message>();
 								groupsAndMessages.put(groupName, messages);
 							}
+							System.out.println(line);
 							line = fromClient.readLine();
+							System.out.println(line);
 							System.out.println("got line \"" + line + "\""); // show what we got
 							result = line;
 							String id = request[1];
+							System.out.println(id);
 							if (request[0].equals("id") && asciiEncoder.canEncode(id) && !(id.matches(".*\\s+.*"))){
 								String msg = "";
 								while((line = fromClient.readLine()) != null){
 									msg+=line + '\n';
 									toClient.writeBytes("Received: "+line+'\n');
 								}
-								messages = groupsAndMessages.get(groupName);
-								messages = messages.add(msg);
+								// (String message, String timestamp, String id, String ip)
+								Date date = new Date();
+								SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy h:mm:ss a");
+								String formattedDate = sdf.format(date);
+								Message message = new Message(msg, formattedDate, id, conn.getRemoteSocketAddress().toString());
+								ArrayList<Message> messages = groupsAndMessages.get(groupName);
+								messages.add(message);
 								System.out.print(msg);
 								conn.close();
 							}else{
@@ -92,14 +108,20 @@ public class TCPServer {
 							conn.close();
 							continue;
 						}
-					}else if (request[0].equals("get")){
+					}else if (requestType.equals("get")){
 						if (asciiEncoder.canEncode(groupName) && !(groupName.matches(".*\\s+.*")) && groupsAndMessages.containsKey(groupName)){
-							ArrayList<String> groupMessages = groupsAndMessages.get(groupName);
+							ArrayList<Message> groupMessages = groupsAndMessages.get(groupName);
 							System.out.println(groupMessages.size() + "messages");
 							//print message header
 							System.out.println();
 							for (int i = 0; i< groupMessages.size(); i++){
+
+								//From paul /192.168.60.132:42786 Fri Feb 05 16:15:38 EST 2016
 								//print message
+								Message message = groupMessages.get(i);
+								System.out.println("From " + message.getId() + " /" + message.getIp() + " "+message.getTimeStamp());
+								System.out.println();
+								System.out.println(message);
 								System.out.println();
 							}
 						}else{
@@ -115,52 +137,8 @@ public class TCPServer {
 			}catch (IOException e) {
 				System.out.println(e);
 			}
-		}
 
 
 
-
-		while(true){
-
-			String line; // read the data from the client
-			line = fromClient.readLine();
-			System.out.println("got line \"" + line + "\""); // show what we got
-			String result = line; // do the work
-			if(result.equalsIgnoreCase("post "+"group2")){
-				result = "Ok" + '\n';
-			}
-			else{
-				result = "error" + '\n';
-			}
-			toClient.writeBytes(result); // send the result
-			if(result.equalsIgnoreCase("error" + '\n')){
-				conn.close();
-				continue;
-			}
-			line = fromClient.readLine();
-			System.out.println("got line \"" + line + "\""); // show what we got
-			result = line;
-			if(result.equalsIgnoreCase("id "+"School")){
-				result = "Ok" + '\n';
-			}
-			else{
-				result = "error" + '\n';
-			}
-			toClient.writeBytes(result);
-			if(result.equalsIgnoreCase("error" + '\n')){
-				conn.close();
-				continue;
-			}
-			String msg = "";
-			while((line = fromClient.readLine()) != null){
-				msg+=line + '\n';
-				toClient.writeBytes("Received: "+line+'\n');
-			}
-			// implement message storing
-
-			System.out.print(msg);
-			conn.close(); // close connection
-		}
-		//svc.close(); // stop listening
 	}
 }
