@@ -1,6 +1,8 @@
 import java.io.*;
 import java.net.*;
-public class post {
+
+
+public class get {
 	public static void main(String args []) throws Exception {
 
 		int argc = args.length;
@@ -24,7 +26,7 @@ public class post {
 				}
 			}
 			else{
-				System.err.println("Proper cmd: post [-h hostname] [-p port] groupname. " + 
+				System.err.println("Proper cmd: get [-h hostname] [-p port] groupname. " + 
 						"In addition, groupname should have no white spaces");
 				System.exit(1);
 			}
@@ -52,34 +54,35 @@ public class post {
 					}
 				}
 				else{
-					System.err.println("Proper cmd: post [-h hostname] [-p port] groupname. " + 
+					System.err.println("Proper cmd: get [-h hostname] [-p port] groupname. " + 
 						"In addition, groupname should have no white spaces");
 					System.exit(1);
 				}
 		}
 		else{
-			System.err.println("Proper cmd: post [-h hostname] [-p port] groupname. " + 
+			System.err.println("Proper cmd: get [-h hostname] [-p port] groupname. " + 
 						"In addition, groupname should have no white spaces");
 			System.exit(1);
 		}
 
 
 		String line; // user input
-		Socket sock = null;
 		BufferedReader userdata = new BufferedReader(new InputStreamReader(System.in));
-	 	try{
+	 	Socket sock = null;
+
+		try{
 			sock = new Socket(host, port); // connect to localhost port 12345
-		}catch(Exception e){
+		} catch(Exception e){
 			System.err.println("Invalid hostname or port.");
 			System.exit(1);
 		}
 		DataOutputStream toServer = new DataOutputStream(sock.getOutputStream());
 		BufferedReader fromServer = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 
-		// provide the post command
+		// provide the get command
 
 		String result;
-		toServer.writeBytes("post " + groupname + '\n'); // send the line to the server
+		toServer.writeBytes("get " + groupname + '\n'); // send the line to the server
 		
 
 		//line = userdata.readLine(); // read a line from the user
@@ -90,25 +93,22 @@ public class post {
 			sock.close(); // and we’re done
 			System.exit(1);
 		}
-		String user = System.getProperty("user.name");
-		toServer.writeBytes("id " + user + '\n');
-		result = null;
-		result = fromServer.readLine();
-		if(!result.equalsIgnoreCase("ok")){
-			System.err.println(result);
-			sock.close(); // and we’re done
-			System.exit(1);
-		}
-
-
-		System.out.println(result); // print it
-		// Send a message
-		while((line = userdata.readLine()) != null){
-			toServer.writeBytes(line + '\n');
-			result = fromServer.readLine();
+		else {
 			System.out.println(result);
 		}
-
+		
+		result = null;
+		//gets and prints out number of of messages
+		result = fromServer.readLine();
+		System.out.println(result);
+		
+		// Receive a message
+		while((line = fromServer.readLine()) != null){
+			//toServer.writeBytes(line + '\n');
+			//result = fromServer.readLine();
+			System.out.println(line);
+		}
+		
 		sock.close(); // and we’re done
 
 	 }
