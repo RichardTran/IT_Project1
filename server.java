@@ -144,9 +144,12 @@ public class server implements Runnable {
 						System.out.println();
 						for (int i = 0; i< groupMessages.size(); i++){
 							Message message = groupMessages.get(i);
-							String header ="From " + message.getId() + " "+ message.getIp() + ":"+message.getPortNum()+ " "+message.getTimeStamp()+'\n';
+							String header = "From " + message.getId() + " " + message.getIp() + ":" + message.getPortNum() + " " + message.getTimeStamp() + '\n';
 							toClient.writeBytes(header + '\n');
-							toClient.writeBytes(message.getMessage()+ '\n');
+							toClient.writeBytes(message.getMessage());
+							if(i != groupMessages.size()-1) {
+								toClient.writeBytes("\n");
+							}
 						}
 
 						conn.close();
