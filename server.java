@@ -1,6 +1,5 @@
 //Group Members: Amanda Goonetilleke, Richard Tran, Cheryl Chi
 
-
 import java.io.*;
 import java.net.*;
 import java.nio.charset.Charset;
@@ -29,26 +28,25 @@ public class server implements Runnable {
 		portNum = 12345;
 		int argc = args.length;
 		
-		if (argc == 2 && args[0].equals("-p")){
-			try{
+		if (argc == 2 && args[0].equals("-p")) {
+			try {
 			portNum = Integer.parseInt(args[1]); 
-			}catch(Exception e){
+			} catch(Exception e) {
 				System.out.println("error: invalid port number");
 				System.exit(1);
 			}
-			if (!(portNum >= 1024 && portNum <= 65535)){
+			if (!(portNum >= 1024 && portNum <= 65535)) {
 				System.out.println("error: invalid port number");
 				System.exit(1);
 			}
-		}else if (argc != 0){
+		}else if (argc != 0) {
 			System.out.println("error: invalid server command");
 			System.exit(1);
 		}
 		
-		try{
+		try {
 			svc = new ServerSocket(portNum, 5);
-		}
-		catch (Exception e){
+		} catch (Exception e) {
 			System.out.println("error connecting to server");
 		}
 		while (true) {
@@ -65,24 +63,22 @@ public class server implements Runnable {
 			 //Used to check if string is all ASCII
 			CharsetEncoder asciiEncoder = Charset.forName("US-ASCII").newEncoder();
 
-			
 			String msg = "";
 			line = fromClient.readLine();
 			while (line != null) { 
-				//System.out.println("received line \"" + line + "\"");
 				String[] request = line.split("\\s+");
 				String groupName = request[1];
 				String requestType = request[0];
 				String result = "";
 
-				if (requestType.equals("post")){
-					if (asciiEncoder.canEncode(groupName) && !(groupName.matches(".*\\s+.*"))){
+				if (requestType.equals("post")) {
+					if (asciiEncoder.canEncode(groupName) && !(groupName.matches(".*\\s+.*"))) {
 						//groupname is in a valid format
 						result = "Ok" + '\n'; 
 						toClient.writeBytes(result);
 						
 						//if groupname doesn't exist we add it
-						if (!groupsAndMessages.containsKey(groupName)){
+						if (!groupsAndMessages.containsKey(groupName)) {
 							ArrayList<Message> messages = new ArrayList<Message>();
 							groupsAndMessages.put(groupName, messages);
 						}
@@ -90,9 +86,8 @@ public class server implements Runnable {
 						//checks and prints id
 						line = fromClient.readLine();
 						request = line.split("\\s+");
-						//System.out.println("got line \"" + line + "\""); // show what we got
 						
-						if (request.length!=2){
+						if (request.length!=2) {
 							result = "error: invalid user name\n";
 							toClient.writeBytes(result);
 							conn.close();
@@ -100,16 +95,16 @@ public class server implements Runnable {
 						}
 						
 						String id = request[1];
-						if (request[0].equals("id") && asciiEncoder.canEncode(id) && !(id.matches(".*\\s+.*"))){
+						if (request[0].equals("id") && asciiEncoder.canEncode(id) && !(id.matches(".*\\s+.*"))) {
 							//id is in a valid format
 							result = "Ok" + '\n'; 
 							toClient.writeBytes(result); 
 							
-							while((line = fromClient.readLine()) != null){
+							while((line = fromClient.readLine()) != null) {
 								msg+=line + '\n';
 								toClient.writeBytes("Received: "+line+'\n');
 							}
-							//System.out.println(msg);
+
 							// (String message, String timestamp, String id, String ip)
 							Date date = new Date();
 							SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy h:mm:ss a");
@@ -119,20 +114,23 @@ public class server implements Runnable {
 							messages.add(message);
 							
 							conn.close();
-						}else{
+						}
+						else {
 							result = "error: invalid user name\n";
 							toClient.writeBytes(result);
 							conn.close();
 							continue;
 						}
-					}else{
+					}
+					else {
 						result = "error: invalid group name\n";
 						toClient.writeBytes(result);
 						conn.close();
 						continue;
 					}
-				}else if (requestType.equals("get")){
-					if (asciiEncoder.canEncode(groupName) && !(groupName.matches(".*\\s+.*")) && groupsAndMessages.containsKey(groupName)){
+				}
+				else if (requestType.equals("get")) {
+					if (asciiEncoder.canEncode(groupName) && !(groupName.matches(".*\\s+.*")) && groupsAndMessages.containsKey(groupName)) {
 						//groupname is valid
 						result = "Ok\n";
 						toClient.writeBytes(result);
@@ -142,7 +140,7 @@ public class server implements Runnable {
 						
 						//print message header
 						System.out.println();
-						for (int i = 0; i< groupMessages.size(); i++){
+						for (int i = 0; i< groupMessages.size(); i++) {
 							Message message = groupMessages.get(i);
 							String header = "From " + message.getId() + " " + message.getIp() + ":" + message.getPortNum() + " " + message.getTimeStamp() + '\n';
 							toClient.writeBytes(header + '\n');
@@ -154,7 +152,8 @@ public class server implements Runnable {
 
 						conn.close();
 						return;
-					}else{
+					}
+					else {
 						result = "error: invalid group name\n";
 						toClient.writeBytes(result);
 						conn.close();
@@ -162,11 +161,8 @@ public class server implements Runnable {
 					}
 				}
 			}
-			//System.out.println("closing the connection\n");
-			//conn.close(); 
-		}catch (IOException e) {
+		} catch (IOException e) {
 			//System.out.println(e);
 		}
-
 	}
 }
