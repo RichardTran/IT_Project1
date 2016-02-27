@@ -1,3 +1,6 @@
+// Group members: Amanda Goonetilleke, Richard Tran, Cheryl Chi
+
+
 import java.io.*;
 import java.net.*;
 public class post {

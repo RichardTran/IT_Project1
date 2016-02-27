@@ -1,3 +1,4 @@
+// Group Members: Amanda Goonetilleke, Richard Tran, Cheryl Chi
 
 public class Message {
 	
