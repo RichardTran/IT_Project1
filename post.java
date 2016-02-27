@@ -10,6 +10,11 @@ public class post {
 		if(argc == 1){
 			// just has groupname
 			groupname = args[0];
+			if(groupname.equalsIgnoreCase("-h") || groupname.equalsIgnoreCase("-p")){
+				System.err.println("Proper cmd: post [-h hostname] [-p port] groupname. " + 
+						"In addition, groupname should have no white spaces");
+				System.exit(1);
+			}
 		}
 		else if(argc == 3){
 			if(args[0].equals("-h")){
@@ -65,9 +70,14 @@ public class post {
 
 
 		String line; // user input
+		Socket sock = null;
 		BufferedReader userdata = new BufferedReader(new InputStreamReader(System.in));
-	 	Socket sock = new Socket(host, port); // connect to localhost port 12345
-
+	 	try{
+			sock = new Socket(host, port); // connect to localhost port 12345
+		}catch(Exception e){
+			System.err.println("Invalid hostname or port.");
+			System.exit(1);
+		}
 		DataOutputStream toServer = new DataOutputStream(sock.getOutputStream());
 		BufferedReader fromServer = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 
@@ -86,7 +96,6 @@ public class post {
 			System.exit(1);
 		}
 		String user = System.getProperty("user.name");
-		System.out.println(user);
 		toServer.writeBytes("id " + user + '\n');
 		result = null;
 		result = fromServer.readLine();
